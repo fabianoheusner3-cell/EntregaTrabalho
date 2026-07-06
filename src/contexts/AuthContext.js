@@ -20,10 +20,29 @@ export function AuthProvider({ children }) {
       return undefined;
     }
 
-    supabase.auth.getSession().then(({ data }) => {
+    async function loadSession() {
+      const { data } = await supabase.auth.getSession();
+
+      if (!data.session) {
+        setSession(null);
+        setIsLoading(false);
+        return;
+      }
+
+      const { error } = await supabase.auth.getUser();
+
+      if (error) {
+        await supabase.auth.signOut();
+        setSession(null);
+        setIsLoading(false);
+        return;
+      }
+
       setSession(data.session);
       setIsLoading(false);
-    });
+    }
+
+    loadSession();
 
     const {
       data: { subscription },
