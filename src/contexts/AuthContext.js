@@ -21,25 +21,29 @@ export function AuthProvider({ children }) {
     }
 
     async function loadSession() {
-      const { data } = await supabase.auth.getSession();
+      try {
+        const { data } = await supabase.auth.getSession();
 
-      if (!data.session) {
+        if (!data.session) {
+          setSession(null);
+          return;
+        }
+
+        const { error } = await supabase.auth.getUser();
+
+        if (error) {
+          await supabase.auth.signOut();
+          setSession(null);
+          return;
+        }
+
+        setSession(data.session);
+      } catch (error) {
+        console.warn('Nao foi possivel carregar a sessao salva.', error);
         setSession(null);
+      } finally {
         setIsLoading(false);
-        return;
       }
-
-      const { error } = await supabase.auth.getUser();
-
-      if (error) {
-        await supabase.auth.signOut();
-        setSession(null);
-        setIsLoading(false);
-        return;
-      }
-
-      setSession(data.session);
-      setIsLoading(false);
     }
 
     loadSession();
