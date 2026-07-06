@@ -45,6 +45,7 @@ export function AuthForm({ mode, navigation }) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [formError, setFormError] = useState('');
+  const [isRecoveringPassword, setIsRecoveringPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   function validate() {
@@ -152,6 +153,18 @@ export function AuthForm({ mode, navigation }) {
     setFormError('');
   }
 
+  function openPasswordRecovery() {
+    setFormError('');
+    setPassword('');
+    setConfirmPassword('');
+    setIsRecoveringPassword(true);
+  }
+
+  function closePasswordRecovery() {
+    setFormError('');
+    setIsRecoveringPassword(false);
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
@@ -170,6 +183,11 @@ export function AuthForm({ mode, navigation }) {
             />
 
             <Text style={styles.appName}>RotinaApp</Text>
+            {isRecoveringPassword ? (
+              <Text style={styles.recoveryText}>
+                Digite seu e-mail para receber o link de recuperacao.
+              </Text>
+            ) : null}
 
             <View style={styles.field}>
               <Text style={styles.label}>E-mail</Text>
@@ -183,19 +201,21 @@ export function AuthForm({ mode, navigation }) {
               />
             </View>
 
-            <View style={styles.field}>
-              <Text style={styles.label}>Senha</Text>
-              <TextInput
-                autoCapitalize="none"
-                autoComplete={isLogin ? 'current-password' : 'new-password'}
-                onChangeText={updatePassword}
-                secureTextEntry
-                style={styles.input}
-                value={password}
-              />
-            </View>
+            {!isRecoveringPassword ? (
+              <View style={styles.field}>
+                <Text style={styles.label}>Senha</Text>
+                <TextInput
+                  autoCapitalize="none"
+                  autoComplete={isLogin ? 'current-password' : 'new-password'}
+                  onChangeText={updatePassword}
+                  secureTextEntry
+                  style={styles.input}
+                  value={password}
+                />
+              </View>
+            ) : null}
 
-            {!isLogin ? (
+            {!isLogin && !isRecoveringPassword ? (
               <View style={styles.field}>
                 <Text style={styles.label}>Confirmar senha</Text>
                 <TextInput
@@ -211,7 +231,7 @@ export function AuthForm({ mode, navigation }) {
 
             <Pressable
               disabled={isSubmitting}
-              onPress={handleSubmit}
+              onPress={isRecoveringPassword ? handleForgotPassword : handleSubmit}
               style={({ pressed }) => [
                 styles.primaryButton,
                 pressed && styles.buttonPressed,
@@ -222,34 +242,50 @@ export function AuthForm({ mode, navigation }) {
                 <ActivityIndicator color="#FFFFFF" size="small" />
               ) : (
                 <Text style={styles.primaryButtonText}>
-                  {isLogin ? 'Entrar' : 'Cadastrar'}
+                  {isRecoveringPassword
+                    ? 'Enviar recuperacao'
+                    : isLogin
+                      ? 'Entrar'
+                      : 'Cadastrar'}
                 </Text>
               )}
             </Pressable>
 
             {formError ? <Text style={styles.errorText}>{formError}</Text> : null}
 
-            {isLogin ? (
+            {isLogin && !isRecoveringPassword ? (
               <Pressable
                 disabled={isSubmitting}
-                onPress={handleForgotPassword}
+                onPress={openPasswordRecovery}
                 style={styles.forgotButton}
               >
                 <Text style={styles.forgotText}>Esqueci minha senha</Text>
               </Pressable>
             ) : null}
 
-            <Text style={styles.orText}>ou</Text>
+            {isRecoveringPassword ? (
+              <Pressable
+                disabled={isSubmitting}
+                onPress={closePasswordRecovery}
+                style={styles.forgotButton}
+              >
+                <Text style={styles.forgotText}>Voltar ao login</Text>
+              </Pressable>
+            ) : null}
 
-            <Pressable
-              disabled={isSubmitting}
-              onPress={() => navigation.navigate(isLogin ? 'Cadastro' : 'Login')}
-              style={styles.linkButton}
-            >
-              <Text style={styles.linkText}>
-                {isLogin ? 'Criar uma conta' : 'Voltar para o login'}
-              </Text>
-            </Pressable>
+            {!isRecoveringPassword ? <Text style={styles.orText}>ou</Text> : null}
+
+            {!isRecoveringPassword ? (
+              <Pressable
+                disabled={isSubmitting}
+                onPress={() => navigation.navigate(isLogin ? 'Cadastro' : 'Login')}
+                style={styles.linkButton}
+              >
+                <Text style={styles.linkText}>
+                  {isLogin ? 'Criar uma conta' : 'Voltar para o login'}
+                </Text>
+              </Pressable>
+            ) : null}
 
             {!isConfigured ? (
               <Text style={styles.configNotice}>Supabase nao configurado</Text>
@@ -298,6 +334,14 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     marginBottom: 24,
     marginTop: 8,
+  },
+  recoveryText: {
+    color: '#7C8799',
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 18,
+    marginTop: -12,
+    textAlign: 'center',
   },
   field: {
     marginBottom: 14,
