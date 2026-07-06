@@ -9,7 +9,6 @@ import {
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 
 const AuthContext = createContext(null);
-const SESSION_LOAD_TIMEOUT_MS = 5000;
 
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
@@ -21,39 +20,8 @@ export function AuthProvider({ children }) {
       return undefined;
     }
 
-    async function loadSession() {
-      try {
-        const { data } = await withTimeout(
-          supabase.auth.getSession(),
-          SESSION_LOAD_TIMEOUT_MS,
-        );
-
-        if (!data.session) {
-          setSession(null);
-          return;
-        }
-
-        const { error } = await withTimeout(
-          supabase.auth.getUser(),
-          SESSION_LOAD_TIMEOUT_MS,
-        );
-
-        if (error) {
-          supabase.auth.signOut();
-          setSession(null);
-          return;
-        }
-
-        setSession(data.session);
-      } catch (error) {
-        console.warn('Nao foi possivel carregar a sessao salva.', error);
-        setSession(null);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    loadSession();
+    setSession(null);
+    setIsLoading(false);
 
     const {
       data: { subscription },
@@ -120,15 +88,4 @@ export function useAuth() {
   }
 
   return context;
-}
-
-function withTimeout(promise, timeoutMs) {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) => {
-      setTimeout(() => {
-        reject(new Error('Tempo esgotado ao carregar a sessao.'));
-      }, timeoutMs);
-    }),
-  ]);
 }
