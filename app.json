@@ -27,6 +27,13 @@
         {
           "locationWhenInUsePermission": "Permita que o RotinaApp use sua localizacao para centralizar o mapa e escolher locais das tarefas."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#438FD8",
+          "defaultChannel": "task-proximity"
+        }
       ]
     ]
   }

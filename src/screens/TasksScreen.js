@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapView, Marker } from '../components/MapAdapter';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -92,6 +92,7 @@ function formatError(error) {
 
 export function TasksScreen() {
   const { isConfigured, user } = useAuth();
+  const insets = useSafeAreaInsets();
   const formMapRef = useRef(null);
   const [tasks, setTasks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -547,6 +548,7 @@ export function TasksScreen() {
         <FlatList
           contentContainerStyle={[
             styles.listContent,
+            { paddingBottom: 104 + Math.max(insets.bottom, 10) },
             filteredTasks.length === 0 && styles.emptyListContent,
           ]}
           data={filteredTasks}
@@ -581,7 +583,7 @@ export function TasksScreen() {
       <Pressable
         accessibilityLabel="Adicionar tarefa"
         onPress={openCreateForm}
-        style={styles.fab}
+        style={[styles.fab, { bottom: 28 + Math.max(insets.bottom, 10) }]}
       >
         <MaterialCommunityIcons color="#FFFFFF" name="plus" size={28} />
       </Pressable>

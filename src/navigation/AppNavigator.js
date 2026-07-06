@@ -1,5 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapScreen } from '../screens/MapScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { TasksScreen } from '../screens/TasksScreen';
@@ -14,6 +15,9 @@ const TAB_ICONS = {
 };
 
 export function AppNavigator() {
+  const insets = useSafeAreaInsets();
+  const bottomInset = Math.max(insets.bottom, 10);
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -33,8 +37,8 @@ export function AppNavigator() {
         },
         tabBarStyle: {
           borderTopColor: colors.border,
-          height: 64,
-          paddingBottom: 7,
+          height: 58 + bottomInset,
+          paddingBottom: bottomInset,
           paddingTop: 6,
         },
       })}
