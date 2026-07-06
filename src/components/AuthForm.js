@@ -40,7 +40,7 @@ function translateAuthError(error) {
 
 export function AuthForm({ mode, navigation }) {
   const isLogin = mode === 'login';
-  const { isConfigured, signIn, signUp } = useAuth();
+  const { isConfigured, resetPassword, signIn, signUp } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -107,6 +107,34 @@ export function AuthForm({ mode, navigation }) {
         [{ text: 'OK', onPress: () => navigation.navigate('Login') }],
       );
     }
+  }
+
+  async function handleForgotPassword() {
+    setFormError('');
+
+    if (!EMAIL_PATTERN.test(email.trim())) {
+      setFormError('Informe seu e-mail para recuperar a senha.');
+      return;
+    }
+
+    if (!isConfigured) {
+      setFormError('Supabase nao configurado. Confira o arquivo .env.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    const { error } = await resetPassword(email);
+    setIsSubmitting(false);
+
+    if (error) {
+      setFormError(translateAuthError(error));
+      return;
+    }
+
+    Alert.alert(
+      'E-mail enviado',
+      'Confira sua caixa de entrada e siga o link para redefinir sua senha. Verifique tambem o spam.',
+    );
   }
 
   function updateEmail(value) {
@@ -200,6 +228,16 @@ export function AuthForm({ mode, navigation }) {
             </Pressable>
 
             {formError ? <Text style={styles.errorText}>{formError}</Text> : null}
+
+            {isLogin ? (
+              <Pressable
+                disabled={isSubmitting}
+                onPress={handleForgotPassword}
+                style={styles.forgotButton}
+              >
+                <Text style={styles.forgotText}>Esqueci minha senha</Text>
+              </Pressable>
+            ) : null}
 
             <Text style={styles.orText}>ou</Text>
 
@@ -308,6 +346,16 @@ const styles = StyleSheet.create({
     lineHeight: 17,
     marginTop: 10,
     textAlign: 'center',
+  },
+  forgotButton: {
+    marginTop: 12,
+    paddingHorizontal: 4,
+    paddingVertical: 4,
+  },
+  forgotText: {
+    color: '#438FD8',
+    fontSize: 13,
+    fontWeight: '700',
   },
   orText: {
     color: '#B9B9B9',

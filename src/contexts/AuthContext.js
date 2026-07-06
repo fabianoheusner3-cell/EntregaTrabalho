@@ -60,17 +60,23 @@ export function AuthProvider({ children }) {
 
   const signOut = useCallback(() => supabase.auth.signOut(), []);
 
+  const resetPassword = useCallback(
+    (email) => supabase.auth.resetPasswordForEmail(email.trim()),
+    [],
+  );
+
   const value = useMemo(
     () => ({
       isConfigured: isSupabaseConfigured,
       isLoading,
+      resetPassword,
       session,
       signIn,
       signOut,
       signUp,
       user: session?.user ?? null,
     }),
-    [isLoading, session, signIn, signOut, signUp],
+    [isLoading, resetPassword, session, signIn, signOut, signUp],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
